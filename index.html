@@ -1,0 +1,282 @@
+
+<!DOCTYPE html>
+<html lang="en" class="dark">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1">
+  <meta name="description" content="petpet generator">
+  <meta name="theme-color" content="#ffeaa8">
+  <meta property="og:title" content="petpet">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://benisland.neocities.org/petpet/">
+  <meta property="og:image" itemprop="image" content="https://benisland.neocities.org/petpet/img/pet.png">
+  <meta property="og:description" itemprop="description" content="petpet gif generator">
+  <title>petpet</title>
+  <link rel="icon" href="https://benisland.neocities.org/petpet/favicon.ico">
+
+  <!-- Sanitize CSS -->
+  <link href="https://unpkg.com/sanitize.css" rel="stylesheet" />
+  <link href="https://unpkg.com/sanitize.css/forms.css" rel="stylesheet" />
+  <link href="https://unpkg.com/sanitize.css/typography.css" rel="stylesheet" />
+
+  <!-- External -->
+  <link rel="stylesheet" href="https://unpkg.com/jam-icons/css/jam.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Balsamiq+Sans:wght@700&family=Work+Sans:wght@400;600&display=swap"
+        rel="stylesheet">
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="https://benisland.neocities.org/petpet/style.css">
+  <style type="text/css">
+    .grid {
+      margin: 0 auto;
+      max-width: 48em;
+      display: grid;
+      grid-template-columns: 38.2% 61.8%;
+      grid-template-areas:
+        "header  header"
+        "preview upload"
+        "preview output"
+        "footer  footer";
+    }
+
+    .header {
+      grid-area: header;
+      text-align: center;
+      padding: 0.618em 0.618em 1.25em;
+    }
+
+    .preview {
+      grid-area: preview;
+      border-top-left-radius: 0.618em;
+      border-bottom-left-radius: 0.618em;
+      padding-right: 0;
+    }
+
+    .upload {
+      grid-area: upload;
+      border-top-right-radius: 0.618em;
+    }
+
+    .output {
+      grid-area: output;
+      border-bottom-right-radius: 0.618em;
+    }
+
+    .footer {
+      grid-area: footer;
+      text-align: center;
+      padding: 1.618em;
+    }
+
+    .preview-canvas {
+      margin: 0 auto 2.312em;
+      max-width: 200px;
+    }
+
+    .preview-playback {
+      display: flex;
+    }
+
+    .preview-playback .btn {
+      border-top-right-radius: 0;
+      border-top-left-radius: 0;
+      flex-grow: 1;
+    }
+
+    .btn-playback-playpause.paused .btn-playback-pause,
+    .btn-playback-playpause:not(.paused) .btn-playback-play {
+      display: none;
+    }
+
+    .export-row {
+      margin-top: 1.75em;
+    }
+
+    .output-info {
+      color: var(--txt-light);
+    }
+
+    img[src]+.output-info {
+      margin-top: 1em;
+    }
+
+    fieldset {
+      padding: 0;
+      margin: 0;
+      border: 0;
+    }
+
+    #fpsVal {
+      width: 4em;
+      margin-left: 0.618em;
+    }
+
+    @media only screen and (max-width: 40em) {
+      .grid {
+        grid-template-columns: 100%;
+        grid-template-areas:
+          "header"
+          "upload"
+          "preview"
+          "output"
+          "footer";
+      }
+
+      .header,
+      .footer,
+      .content {
+        padding: 1.618em 8%;
+        border-radius: 0;
+      }
+
+      .preview {
+        padding-left: 16%;
+        padding-right: 16%;
+      }
+
+      .content,
+      .footer {
+        border-top: 1px solid var(--input-border);
+      }
+
+      .export-row {
+        margin-top: 2.5em;
+      }
+
+      #fpsVal {
+        width: 7em;
+        font-size: small;
+        padding: 0.5em;
+        padding-right: 0.2em;
+      }
+    }
+
+  </style>
+  <script>/* change theme */ let theme = localStorage.getItem("theme"); theme || (theme = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light"), document.documentElement.setAttribute("data-theme", theme), document.addEventListener("DOMContentLoaded", () => { Math.random() < .25 && (document.getElementById("fg").href = atob("aHR0cHM6Ly90d2l0dGVyLmNvbS9zdHZwdmQ=")); document.querySelectorAll("a.e").forEach(x => { x.href = x.dataset.href }); const e = document.getElementById("color-theme"); e.checked = "dark" == theme, e.addEventListener("change", t => { theme = e.checked ? "dark" : "light", document.documentElement.setAttribute("data-theme", theme), localStorage.setItem("theme", theme) }) });</script>
+</head>
+
+<body>
+  <main class="grid">
+
+    <section class="preview content">
+      <div class="content-heading">preview</div>
+      <div class="preview-canvas">
+        <canvas height="112" width="112" id="canvas" class="canvas" tabindex="1"></canvas>
+        <div class="preview-playback">
+          <button id="prev" class="btn btn-playback-prev control-grouped-left">
+            <i class="jam jam-set-backward"></i>
+          </button>
+          <button id="play" class="btn btn-playback-playpause control-grouped-center">
+            <i class="jam jam-play btn-playback-play"></i>
+            <i class="jam jam-pause btn-playback-pause"></i>
+          </button>
+          <button id="next" class="btn btn-playback-next control-grouped-right">
+            <i class="jam jam-set-forward"></i>
+          </button>
+        </div>
+      </div>
+
+      <div class="preview-controls">
+        <div class="row">
+          <div class="control-group">
+            <label for="toggleAdjust" class="control-group-l">adjust mode</label>
+            <label for="toggleAdjust" class="toggle-switch">
+              <input id="toggleAdjust" type="checkbox" class="toggle-switch-input">
+              <span class="toggle-switch-control"></span>
+            </label>
+          </div>
+          <div class="hint">
+            enable to move your image with mouse/touch/keyboard in the preview. works on mobile
+            <a class="e" data-href="https://i.imgur.com/q0NE5rh.jpg" target="_blank">too</a> :-)
+          </div>
+        </div>
+        <div class="row control-group">
+          <label for="toggleFlip" class="control-group-l">flip</label>
+          <label for="toggleFlip" class="toggle-switch sm">
+            <input id="toggleFlip" type="checkbox" class="toggle-switch-input">
+            <span class="toggle-switch-control"></span>
+          </label>
+        </div>
+        <div class="row control-group">
+          <label for="scale" class="control-label control-group-s">size</label>
+          <input id="scale" class="control-range control-group-l" type="range" step="1" min="15" max="200" value="85">
+        </div>
+        <div class="row control-group">
+          <label for="squish" class="control-label control-group-s">squish</label>
+          <input id="squish" class="control-range control-group-l" type="range" step="1" min="100" max="300"
+                 value="125">
+        </div>
+        <div class="row control-group">
+          <label for="fps" class="control-label control-group-s">speed</label>
+          <input id="fps" class="control-range" type="range" step="2" min="2" max="60" value="16">
+          <input type="number" id="fpsVal" class="control control-sm" step="1" min="2" max="60" value="16">
+        </div>
+        <div class="row export-row">
+          <div class="control-group">
+            <button id="reset" class="btn btn-reset control-group-s">reset</button>
+            <div class="spacer" style="width:0.382em"></div>
+            <button id="export" class="btn btn-export control-group-l">export</button>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <section class="upload content">
+      <div class="content-heading">upload</div>
+      <div class="upload-preview">
+        <label class="drop-area preview-image-container" id="dropArea" for="uploadFile">
+          <div class="drop-area-input">
+            <input class="drop-area-file-input" type="file" id="uploadFile" accept="image/*">
+            <img class="drop-area-preview preview-image" src="" id="uploadPreview">
+            <div class="drop-area-upload" for="uploadFile">
+              <label for="uploadFile" class="drop-area-upload-btn btn">choose file</label>
+              <label id="uploadFileName" class="drop-area-upload-filename">or drop here</label>
+            </div>
+          </div>
+        </label>
+        <div class="row control-group">
+          <input class="control control-group-l control-has-icon control-grouped-left" type="url" required
+                 placeholder="enter a url to upload" id="uploadUrl">
+          <button type="submit" class="btn control-icon control-grouped-right" id="uploadUrlBtn"><i
+               class="jam jam-upload"></i></button>
+        </div>
+        <p id="uploadError" class="error-message"></p>
+        <p class="help">note: url upload might not always <a data-href="https://t.co/PLJtS6mKmO" target="_blank"
+             class="e">work</a> cus some sites don't like it when you direct link images from them</p>
+      </div>
+    </section>
+
+    <section class="output content">
+      <div class="content-heading">output</div>
+      <figure class="preview-image-container">
+        <img width="600" height="600" class="preview-image" id="result">
+        <div class="help output-info" id="info">...</div>
+      </figure>
+      <p class="help">
+        <a data-href='https://i.imgur.com/hPUOCb1.jpg' target="_blank" class="e">ps:</a> save the exported
+        gif if you want to share it, using the link won't work cus it only exists in your browser
+      </p>
+      <p class="help">pps: if there's weird green dots in the export try a different browser</p>
+    </section>
+
+
+    
+
+   if(   (isset( $_POST['my_field'][$index][$i] ))  &&   (!empty($_POST['my_field'][$index][$i]))  ) {
+
+   }
+
+
+
+
+
+  </main>
+
+  <script src="requestInterval.js"></script>
+  <script src="gif.js"></script>
+  <script src="script.js"></script>
+</body>
+
+</html>
